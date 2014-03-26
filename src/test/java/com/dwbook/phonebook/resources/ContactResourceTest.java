@@ -10,7 +10,8 @@ import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 
-import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class ContactResourceTest {
     @ClassRule
@@ -24,8 +25,7 @@ public class ContactResourceTest {
         ClientResponse response = resources.client().resource("/contacts/" + JOHN_DOE.getId())
                 .get(ClientResponse.class);
 
-        assertThat(response.getEntity(Contact.class)).isEqualTo(JOHN_DOE);
-        assertThat(response.getStatus()).isEqualTo(Response.SC_OK);
+        assertThat("Response status is 200 OK", response.getStatus(), equalTo(Response.SC_OK));
     }
 
     @Test
@@ -35,7 +35,7 @@ public class ContactResourceTest {
                 .entity(JOHN_DOE)
                 .post(ClientResponse.class);
 
-        assertThat(response.getStatus()).isEqualTo(Response.SC_CREATED);
+        assertThat("Response status is 201 CREATED", response.getStatus(), equalTo(Response.SC_CREATED));
     }
 
     @Test
@@ -45,8 +45,8 @@ public class ContactResourceTest {
                 .entity(JOHN_DOE)
                 .put(ClientResponse.class);
 
-        assertThat(response.getEntity(Contact.class)).isEqualTo(JOHN_DOE);
-        assertThat(response.getStatus()).isEqualTo(Response.SC_OK);
+        assertThat(response.getEntity(Contact.class), equalTo(JOHN_DOE));
+        assertThat("Response status is 200 OK", response.getStatus(), equalTo(Response.SC_OK));
     }
 
     @Test
@@ -54,6 +54,6 @@ public class ContactResourceTest {
         ClientResponse response = resources.client().resource("/contacts/" + JOHN_DOE.getId())
                 .delete(ClientResponse.class);
 
-        assertThat(response.getStatus()).isEqualTo(Response.SC_NO_CONTENT);
+        assertThat("Response status is 204 NO CONTENT", response.getStatus(), equalTo(Response.SC_NO_CONTENT));
     }
 }
