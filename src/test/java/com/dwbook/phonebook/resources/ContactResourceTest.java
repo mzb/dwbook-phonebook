@@ -5,7 +5,10 @@ import com.sun.jersey.api.client.ClientResponse;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.jetty.server.Response;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import javax.ws.rs.core.MediaType;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
@@ -18,37 +21,39 @@ public class ContactResourceTest {
 
     @Test
     public void getContact() {
-        assertThat(resources.client().resource("/contacts/1").get(Contact.class))
-                .isEqualTo(JOHN_DOE);
+        ClientResponse response = resources.client().resource("/contacts/" + JOHN_DOE.getId())
+                .get(ClientResponse.class);
 
-        assertThat(resources.client().resource("/contacts/1").get(ClientResponse.class).getStatus())
-                .isEqualTo(Response.SC_OK);
+        assertThat(response.getEntity(Contact.class)).isEqualTo(JOHN_DOE);
+        assertThat(response.getStatus()).isEqualTo(Response.SC_OK);
     }
 
     @Test
     public void createContact() {
-        assertThat(resources.client().resource("/contacts")
-                .queryParam("firstName", "John")
-                .queryParam("lastName", "Doe")
-                .queryParam("phone", "+48511300004")
-                .post(ClientResponse.class).getStatus())
-                .isEqualTo(Response.SC_CREATED);
+        ClientResponse response = resources.client().resource("/contacts")
+                .type(MediaType.APPLICATION_JSON)
+                .entity(JOHN_DOE)
+                .post(ClientResponse.class);
+
+        assertThat(response.getStatus()).isEqualTo(Response.SC_CREATED);
     }
 
-    // FIXME: Fails because queryParam is not the way to pass data to PUT/POST request
     @Test
     public void updateContact() {
-        assertThat(resources.client().resource("/contacts/1")
-                .queryParam("firstName", "John")
-                .queryParam("lastName", "Doe")
-                .queryParam("phone", "+48511300004")
-                .put(Contact.class))
-                .isEqualTo(JOHN_DOE);
+        ClientResponse response = resources.client().resource("/contacts/" + JOHN_DOE.getId())
+                .type(MediaType.APPLICATION_JSON)
+                .entity(JOHN_DOE)
+                .put(ClientResponse.class);
+
+        assertThat(response.getEntity(Contact.class)).isEqualTo(JOHN_DOE);
+        assertThat(response.getStatus()).isEqualTo(Response.SC_OK);
     }
 
     @Test
     public void deleteContact() {
-        assertThat(resources.client().resource("/contacts/100").delete(ClientResponse.class).getStatus())
-                .isEqualTo(Response.SC_NO_CONTENT);
+        ClientResponse response = resources.client().resource("/contacts/" + JOHN_DOE.getId())
+                .delete(ClientResponse.class);
+
+        assertThat(response.getStatus()).isEqualTo(Response.SC_NO_CONTENT);
     }
 }

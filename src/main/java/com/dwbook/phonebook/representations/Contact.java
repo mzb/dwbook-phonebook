@@ -6,7 +6,10 @@ public class Contact {
     private final String lastName;
     private final String phone;
 
-    public Contact(int id, String firstName, String lastName, String phone) {
+    public Contact(int id,
+                   String firstName,
+                   String lastName,
+                   String phone) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
