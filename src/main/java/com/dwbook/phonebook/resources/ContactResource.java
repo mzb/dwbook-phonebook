@@ -1,6 +1,8 @@
 package com.dwbook.phonebook.resources;
 
+import com.dwbook.phonebook.dao.ContactDAO;
 import com.dwbook.phonebook.representations.Contact;
+import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,11 +16,23 @@ import javax.ws.rs.core.Response;
 public class ContactResource {
     private static final Logger LOG = LoggerFactory.getLogger(ContactResource.class);
 
+    private final ContactDAO dao;
+
+    public ContactResource(ContactDAO dao) {
+        this.dao = dao;
+    }
+
     @GET
     @Path("/{id}")
     public Response getContact(@PathParam("id") int id) {
+        Contact contact = dao.getContactById(id);
+        if (contact == null) {
+            return Response.status(404)
+                    .build();
+        }
+
         return Response
-                .ok(new Contact(id, "John", "Doe", "+48511300004"))
+                .ok(contact)
                 .build();
     }
 

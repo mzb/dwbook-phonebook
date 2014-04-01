@@ -1,5 +1,6 @@
 package com.dwbook.phonebook.resources;
 
+import com.dwbook.phonebook.dao.ContactDAO;
 import com.dwbook.phonebook.representations.Contact;
 import com.sun.jersey.api.client.ClientResponse;
 import io.dropwizard.testing.junit.ResourceTestRule;
@@ -12,24 +13,44 @@ import javax.ws.rs.core.MediaType;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ContactResourceTest {
+    private static final ContactDAO dao = mock(ContactDAO.class);
+    private static final Contact JOHN_DOE = new Contact(1, "John", "Doe", "+48511300004");
+
     @ClassRule
     public static final ResourceTestRule resources = ResourceTestRule.builder()
-            .addResource(new ContactResource())
+            .addResource(new ContactResource(dao))
             .build();
-    static final Contact JOHN_DOE = new Contact(1, "John", "Doe", "+48511300004");
 
     @Test
-    public void getContact() {
-        ClientResponse response = resources.client().resource("/contacts/" + JOHN_DOE.getId())
-                .get(ClientResponse.class);
+    public void getContact_should_return_contact_with_given_id() {
+        when(dao.getContactById(JOHN_DOE.getId())).thenReturn(JOHN_DOE);
+
+        ClientResponse response = requestJohnDoe();
 
         assertThat("Response status is 200 OK", response.getStatus(), equalTo(Response.SC_OK));
+        assertThat("Response contains contact", response.getEntity(Contact.class), equalTo(JOHN_DOE));
     }
 
     @Test
-    public void createContact() {
+    public void getContact_should_return_not_found_when_contact_does_not_exist() {
+        when(dao.getContactById(JOHN_DOE.getId())).thenReturn(null);
+
+        ClientResponse response = requestJohnDoe();
+
+        assertThat("Response status is 404 Not Found", response.getStatus(), equalTo(Response.SC_NOT_FOUND));
+    }
+
+    private ClientResponse requestJohnDoe() {
+        return resources.client().resource("/contacts/" + JOHN_DOE.getId())
+                    .get(ClientResponse.class);
+    }
+
+    @Test
+    public void createContact_should_create_contact() {
         ClientResponse response = resources.client().resource("/contacts")
                 .type(MediaType.APPLICATION_JSON)
                 .entity(JOHN_DOE)
