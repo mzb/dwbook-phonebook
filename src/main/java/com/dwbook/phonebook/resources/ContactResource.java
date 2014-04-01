@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Path("/contacts")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,15 +39,22 @@ public class ContactResource {
     }
 
     @POST
-    public Response createContact(Contact contact) {
+    public Response createContact(Contact contact) throws URISyntaxException {
+        int createdId = dao.createContact(contact.getFirstName(),
+                          contact.getLastName(),
+                          contact.getPhone());
+        URI uri = new URI(String.valueOf(createdId));
+
         return Response
-                .created(null)
+                .created(uri)
                 .build();
     }
 
     @DELETE
     @Path("/{id}")
     public Response deleteContact(@PathParam("id") int id) {
+        dao.deleteContact(id);
+
         return Response
                 .noContent()
                 .build();
@@ -59,6 +68,11 @@ public class ContactResource {
                                       contact.getFirstName(),
                                       contact.getLastName(),
                                       contact.getPhone());
+        dao.updateContact(contact.getId(),
+                          contact.getFirstName(),
+                          contact.getLastName(),
+                          contact.getPhone());
+
         return Response
                 .ok(updated)
                 .build();
